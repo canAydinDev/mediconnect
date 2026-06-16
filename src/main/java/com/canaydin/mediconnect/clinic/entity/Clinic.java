@@ -50,7 +50,7 @@ public class Clinic {
     @Column(name = "RATING", precision = 2, scale = 1)
     private BigDecimal rating;
 
-    @Lob
+
     @Column(name = "DESCRIPTION")
     private String description;
 
