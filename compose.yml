@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: mediconnect-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mediconnect_db
+      POSTGRES_USER: mediconnect_user
+      POSTGRES_PASSWORD: mediconnect_pass
+    volumes:
+      - mediconnect_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  mediconnect_postgres_data:
+    name: mediconnect_postgres_data
