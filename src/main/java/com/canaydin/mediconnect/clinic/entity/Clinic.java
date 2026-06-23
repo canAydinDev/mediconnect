@@ -1,5 +1,6 @@
 package com.canaydin.mediconnect.clinic.entity;
 
+import com.canaydin.mediconnect.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +20,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Clinic {
+public class Clinic extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,17 +55,6 @@ public class Clinic {
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @Column(name = "CREATED_AT")
-    private Instant createdAt;
-
-    @Column(name = "CREATED_BY", length = 100)
-    private String createdBy;
-
-    @Column(name = "UPDATED_AT")
-    private Instant updatedAt;
-
-    @Column(name = "UPDATED_BY", length = 100)
-    private String updatedBy;
 
 
 }
