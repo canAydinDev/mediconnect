@@ -75,7 +75,7 @@ public class ContactMessageServiceImpl implements ContactMessageService {
                 contactMessage.getUserType(),
                 contactMessage.getSubject(),
                 contactMessage.getMessage(),
-                contactMessage.getStatus(),
+                contactMessage.getStatus().name(),
                 contactMessage.getCreatedAt()
         );
     }
