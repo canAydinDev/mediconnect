@@ -47,4 +47,5 @@ public class ClinicController {
         clinicService.deleteClinicById(id);
         return ResponseEntity.noContent().build();
     }
+    //hello
 }
