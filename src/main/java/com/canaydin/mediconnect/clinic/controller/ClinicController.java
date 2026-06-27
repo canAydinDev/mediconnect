@@ -4,6 +4,8 @@ import com.canaydin.mediconnect.clinic.dto.ClinicDto;
 import com.canaydin.mediconnect.clinic.dto.ClinicRequestDto;
 import com.canaydin.mediconnect.clinic.service.ClinicService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +26,7 @@ public class ClinicController {
     }
 
     @GetMapping(value = "/{id}", version = "1.0")
-    public ResponseEntity<ClinicDto> getClinicById(@PathVariable Long id) {
+    public ResponseEntity<ClinicDto> getClinicById(@Valid  @PathVariable Long id) {
         return ResponseEntity.ok(clinicService.getClinicById(id));
     }
 
@@ -43,9 +45,9 @@ public class ClinicController {
     }
 
     @DeleteMapping(value = "/{id}", version = "1.0")
-    public ResponseEntity<Void> deleteClinicById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteClinicById( @PathVariable  Long id) {
         clinicService.deleteClinicById(id);
         return ResponseEntity.noContent().build();
     }
-    //hello
+
 }

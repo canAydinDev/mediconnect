@@ -1,12 +1,8 @@
 package com.canaydin.mediconnect.contact.entity;
 
 import com.canaydin.mediconnect.common.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.canaydin.mediconnect.contact.enums.ContactMessageStatus;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,6 +34,7 @@ public class ContactMessage extends BaseEntity {
     @Column(name = "message", nullable = false, length = 2000)
     private String message;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 50)
-    private String status = "NEW";
+    private ContactMessageStatus status = ContactMessageStatus.NEW;
 }
