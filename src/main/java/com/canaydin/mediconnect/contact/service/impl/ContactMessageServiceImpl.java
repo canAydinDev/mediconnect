@@ -3,6 +3,7 @@ package com.canaydin.mediconnect.contact.service.impl;
 import com.canaydin.mediconnect.contact.dto.ContactMessageRequest;
 import com.canaydin.mediconnect.contact.dto.ContactMessageResponse;
 import com.canaydin.mediconnect.contact.entity.ContactMessage;
+import com.canaydin.mediconnect.contact.enums.ContactMessageStatus;
 import com.canaydin.mediconnect.contact.repository.ContactMessageRepository;
 import com.canaydin.mediconnect.contact.service.ContactMessageService;
 import com.canaydin.mediconnect.exception.ResourceNotFoundException;
@@ -26,7 +27,9 @@ public class ContactMessageServiceImpl implements ContactMessageService {
 
     @Override
     public List<ContactMessageResponse> findContactMessageByStatus(String status) {
-        return contactMessageRepository.findByStatus(status).
+        ContactMessageStatus contactMessageStatus = ContactMessageStatus.valueOf(status);
+
+        return contactMessageRepository.findByStatus(contactMessageStatus).
                 stream().map(this::transformContactMessage).toList();
     }
 
@@ -61,7 +64,7 @@ public class ContactMessageServiceImpl implements ContactMessageService {
     @Override
     public ContactMessageResponse updateStatus(Long id, String status) {
         ContactMessage contactMessage = contactMessageRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Contact Message", "id", id));
-        contactMessage.setStatus(status);
+        contactMessage.setStatus(ContactMessageStatus.valueOf(status));
         contactMessageRepository.save(contactMessage);
         return transformContactMessage(contactMessage);
 
