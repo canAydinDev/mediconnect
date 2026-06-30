@@ -1,19 +1,15 @@
 package com.canaydin.mediconnect.clinic.entity;
 
 import com.canaydin.mediconnect.common.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
+import com.canaydin.mediconnect.doctor.entity.Doctor;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "CLINICS")
@@ -54,6 +50,9 @@ public class Clinic extends BaseEntity {
 
     @Column(name = "DESCRIPTION")
     private String description;
+
+    @OneToMany(mappedBy = "clinic")
+    private List<Doctor> doctors;
 
 
 
