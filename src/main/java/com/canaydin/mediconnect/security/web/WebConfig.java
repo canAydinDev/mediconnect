@@ -1,4 +1,4 @@
-package com.canaydin.mediconnect.config.web;
+package com.canaydin.mediconnect.security.web;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;

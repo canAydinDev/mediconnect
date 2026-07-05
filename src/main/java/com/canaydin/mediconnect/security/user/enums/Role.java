@@ -1,4 +1,4 @@
-package com.canaydin.mediconnect.entity;
+package com.canaydin.mediconnect.security.user.enums;
 
 public enum Role {
     ADMIN,
