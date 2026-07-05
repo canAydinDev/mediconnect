@@ -1,4 +1,4 @@
-package com.canaydin.mediconnect.dto;
+package com.canaydin.mediconnect.security.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +8,9 @@ import lombok.Getter;
 public class AuthResponse {
 
     private String message;
+    private Long id;
+    private String fullName;
     private String email;
     private String role;
+    private String token;
 }

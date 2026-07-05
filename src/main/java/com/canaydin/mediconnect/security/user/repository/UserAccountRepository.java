@@ -1,6 +1,6 @@
-package com.canaydin.mediconnect.repository;
+package com.canaydin.mediconnect.security.user.repository;
 
-import com.canaydin.mediconnect.entity.UserAccount;
+import com.canaydin.mediconnect.security.user.entity.UserAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

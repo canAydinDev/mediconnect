@@ -1,9 +1,9 @@
-package com.canaydin.mediconnect.entity;
+package com.canaydin.mediconnect.security.user.entity;
 
+import com.canaydin.mediconnect.common.entity.BaseEntity;
+import com.canaydin.mediconnect.security.user.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table(name = "app_users")
-public class UserAccount {
+public class UserAccount extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,19 +34,5 @@ public class UserAccount {
     @Builder.Default
     @Column(nullable = false)
     private boolean active = true;
-
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }
+
