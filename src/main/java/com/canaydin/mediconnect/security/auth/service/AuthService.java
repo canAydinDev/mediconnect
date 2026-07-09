@@ -1,16 +1,20 @@
 package com.canaydin.mediconnect.security.auth.service;
 
+import com.canaydin.mediconnect.exception.DuplicateResourceException;
+import com.canaydin.mediconnect.exception.WeakPasswordException;
 import com.canaydin.mediconnect.security.auth.dto.AuthResponse;
 import com.canaydin.mediconnect.security.auth.dto.LoginRequest;
 import com.canaydin.mediconnect.security.auth.dto.RegisterRequest;
 import com.canaydin.mediconnect.security.jwt.JwtService;
 import com.canaydin.mediconnect.security.user.entity.UserAccount;
+import com.canaydin.mediconnect.security.user.enums.Role;
 import com.canaydin.mediconnect.security.user.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,13 +28,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final CompromisedPasswordChecker compromisedPasswordChecker;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String normalizedEmail = request.getEmail().trim().toLowerCase();
 
+        if (compromisedPasswordChecker.check(request.getPassword()).isCompromised()) {
+            throw new WeakPasswordException("Please choose a stronger password");
+        }
+
         if (userAccountRepository.existsByEmail(normalizedEmail)) {
-            throw new IllegalArgumentException("Email is already registered");
+            throw new DuplicateResourceException("User", "email", normalizedEmail);
         }
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
@@ -39,7 +48,7 @@ public class AuthService {
                 .fullName(request.getFullName().trim())
                 .email(normalizedEmail)
                 .password(encodedPassword)
-                .role(com.canaydin.mediconnect.security.user.enums.Role.PATIENT)
+                .role(Role.PATIENT)
                 .active(true)
                 .build();
 

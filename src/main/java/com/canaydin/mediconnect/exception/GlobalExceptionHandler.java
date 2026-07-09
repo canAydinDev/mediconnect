@@ -83,6 +83,33 @@ public class GlobalExceptionHandler {
                 .body(errors);
     }
 
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateResourceException(
+            DuplicateResourceException exception,
+            WebRequest webRequest
+    ) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                webRequest.getDescription(false),
+                HttpStatus.CONFLICT.toString(),
+                exception.getMessage(),
+                Instant.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(WeakPasswordException.class)
+    public ResponseEntity<Map<String, String>> handleWeakPasswordException(
+            WeakPasswordException exception
+    ) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("password", exception.getMessage());
+
+        return ResponseEntity
+                .badRequest()
+                .body(errors);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException exception,
