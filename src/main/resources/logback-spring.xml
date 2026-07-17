@@ -29,7 +29,7 @@
         <appender-ref ref="RollingFile" />
     </root>
 
-    <logger name="com.canaydin.mediconnect" level="INFO" additivity="false">
+    <logger name="com.canaydin.mediconnect" level="DEBUG" additivity="false">
         <appender-ref ref="Console" />
         <appender-ref ref="RollingFile" />
     </logger>
