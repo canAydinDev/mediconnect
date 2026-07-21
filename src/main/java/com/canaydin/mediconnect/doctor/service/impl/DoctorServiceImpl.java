@@ -81,7 +81,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional(readOnly = true)
     public DoctorDto getDoctorById(Long id) {
 
-       Doctor doctor = doctorRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Doctor", "id", id));
+       Doctor doctor = doctorRepository.findByIdWithClinic(id).orElseThrow(() -> new ResourceNotFoundException("Doctor", "id", id));
         return mapToDoctorDto(doctor);
     }
 
@@ -98,7 +98,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional(readOnly = true)
     public List<DoctorDto> getDoctorsByClinicId(Long clinicId) {
-        return doctorRepository.findByClinicId(clinicId)
+        return doctorRepository.findByClinicIdWithClinic(clinicId)
                 .stream()
                 .map(this::mapToDoctorDto)
                 .toList();
@@ -107,7 +107,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional(readOnly = true)
     public List<DoctorDto> getDoctorsBySpecialty(String specialty) {
-        return doctorRepository.findBySpecialty(specialty)
+        return doctorRepository.findBySpecialtyWithClinic(specialty)
                 .stream()
                 .map(this::mapToDoctorDto)
                 .toList();
@@ -116,7 +116,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional(readOnly = true)
     public List<DoctorDto> getActiveDoctors() {
-        return doctorRepository.findByActiveTrue()
+        return doctorRepository.findActiveDoctorsWithClinic()
                 .stream()
                 .map(this::mapToDoctorDto)
                 .toList();
@@ -125,7 +125,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional(readOnly = true)
     public List<DoctorDto> getActiveDoctorsByClinicId(Long clinicId) {
-        return doctorRepository.findByClinicIdAndActiveTrue(clinicId)
+        return doctorRepository.findActiveDoctorsByClinicIdWithClinic(clinicId)
                 .stream()
                 .map(this::mapToDoctorDto)
                 .toList();
