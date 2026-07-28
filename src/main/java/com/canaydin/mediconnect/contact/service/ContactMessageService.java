@@ -2,6 +2,7 @@ package com.canaydin.mediconnect.contact.service;
 
 import com.canaydin.mediconnect.contact.dto.ContactMessageRequest;
 import com.canaydin.mediconnect.contact.dto.ContactMessageResponse;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -9,7 +10,14 @@ public interface ContactMessageService {
 
     ContactMessageResponse findContactMessageById(Long id);
 
-    List<ContactMessageResponse> findContactMessageByStatus(String status);
+
+    Page<ContactMessageResponse> findContactMessageByStatus(
+            String status,
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    );
 
     ContactMessageResponse createContactMessage(ContactMessageRequest contactMessageRequest);
 

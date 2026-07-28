@@ -8,7 +8,11 @@ import com.canaydin.mediconnect.contact.repository.ContactMessageRepository;
 import com.canaydin.mediconnect.contact.service.ContactMessageService;
 import com.canaydin.mediconnect.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
@@ -25,12 +29,28 @@ public class ContactMessageServiceImpl implements ContactMessageService {
         return transformContactMessage(contactMessage);
     }
 
-    @Override
-    public List<ContactMessageResponse> findContactMessageByStatus(String status) {
-        ContactMessageStatus contactMessageStatus = ContactMessageStatus.valueOf(status);
 
-        return contactMessageRepository.findByStatus(contactMessageStatus).
-                stream().map(this::transformContactMessage).toList();
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ContactMessageResponse> findContactMessageByStatus(
+            String status,
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+        ContactMessageStatus contactMessageStatus =
+                ContactMessageStatus.valueOf(status.trim().toUpperCase());
+
+        Sort sort = buildSort(sortBy, direction);
+
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+
+        PageRequest pageRequest = PageRequest.of(safePage, safeSize, sort);
+
+        return contactMessageRepository.findByStatus(contactMessageStatus, pageRequest)
+                .map(this::transformContactMessage);
     }
 
     @Override
@@ -81,5 +101,25 @@ public class ContactMessageServiceImpl implements ContactMessageService {
                 contactMessage.getStatus().name(),
                 contactMessage.getCreatedAt()
         );
+    }
+
+    private Sort buildSort(String sortBy, String direction) {
+        List<String> allowedSortFields = List.of(
+                "id",
+                "fullName",
+                "email",
+                "userType",
+                "subject",
+                "status",
+                "createdAt"
+        );
+
+        if (!allowedSortFields.contains(sortBy)) {
+            sortBy = "createdAt";
+        }
+
+        return direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
     }
 }
