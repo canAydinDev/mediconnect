@@ -2,9 +2,11 @@ package com.canaydin.mediconnect.security.config;
 
 import com.canaydin.mediconnect.security.jwt.JwtAuthenticationFilter;
 import com.canaydin.mediconnect.security.user.service.UserAccountDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -48,8 +50,31 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("""
+                                    {
+                                      "error": "Unauthorized",
+                                      "message": "Authentication is required to access this resource"
+                                    }
+                                    """);
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("""
+                                    {
+                                      "error": "AccessDenied",
+                                      "message": "You do not have permission to access this resource"
+                                    }
+                                    """);
+                        })
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -58,6 +83,14 @@ public class SecurityConfig {
                                 "/api/swagger-ui/**",
                                 "/api/v3/api-docs/**"
                         ).permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/contact-messages").permitAll()
+
+                        .requestMatchers(
+                                "/api/contact-messages/admin",
+                                "/api/contact-messages/admin/**"
+                        ).hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
