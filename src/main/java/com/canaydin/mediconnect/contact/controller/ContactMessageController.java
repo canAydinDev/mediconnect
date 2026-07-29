@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/contact-messages")
