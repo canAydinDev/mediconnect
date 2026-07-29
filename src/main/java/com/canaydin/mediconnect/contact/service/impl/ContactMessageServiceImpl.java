@@ -8,16 +8,17 @@ import com.canaydin.mediconnect.contact.repository.ContactMessageRepository;
 import com.canaydin.mediconnect.contact.service.ContactMessageService;
 import com.canaydin.mediconnect.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ContactMessageServiceImpl implements ContactMessageService {
 
     private final ContactMessageRepository contactMessageRepository;
@@ -25,13 +26,12 @@ public class ContactMessageServiceImpl implements ContactMessageService {
 
     @Override
     public ContactMessageResponse findContactMessageById(Long id) {
-        ContactMessage contactMessage = contactMessageRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Contact Message", "id", id));
+        ContactMessage contactMessage = contactMessageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Contact Message", "id", id));
         return transformContactMessage(contactMessage);
     }
 
 
     @Override
-    @Transactional(readOnly = true)
     public Page<ContactMessageResponse> findContactMessageByStatus(
             String status,
             int page,
@@ -54,8 +54,9 @@ public class ContactMessageServiceImpl implements ContactMessageService {
     }
 
     @Override
+    @Transactional
     public ContactMessageResponse createContactMessage(ContactMessageRequest contactMessageRequest) {
-        ContactMessage  contactMessage = new ContactMessage();
+        ContactMessage contactMessage = new ContactMessage();
         contactMessage.setFullName(contactMessageRequest.fullName());
         contactMessage.setEmail(contactMessageRequest.email());
         contactMessage.setUserType(contactMessageRequest.userType());
@@ -67,25 +68,21 @@ public class ContactMessageServiceImpl implements ContactMessageService {
         return transformContactMessage(savedContactMessage);
     }
 
-    @Override
-    public List<ContactMessageResponse> findAllContactMessages() {
-        List<ContactMessage> allContactMessages = contactMessageRepository.findAll();
-       return allContactMessages.stream().map(this::transformContactMessage).toList();
-    }
-
 
     @Override
+    @Transactional
     public void deleteContactMessage(Long id) {
-        ContactMessage contactMessage = contactMessageRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Contact Message", "id", id));
+        ContactMessage contactMessage = contactMessageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Contact Message", "id", id));
         contactMessageRepository.delete(contactMessage);
 
     }
 
     @Override
+    @Transactional
     public ContactMessageResponse updateStatus(Long id, String status) {
-        ContactMessage contactMessage = contactMessageRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Contact Message", "id", id));
+        ContactMessage contactMessage = contactMessageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Contact Message", "id", id));
         contactMessage.setStatus(ContactMessageStatus.valueOf(status));
-        contactMessageRepository.save(contactMessage);
+
         return transformContactMessage(contactMessage);
 
     }

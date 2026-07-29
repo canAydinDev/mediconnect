@@ -4,8 +4,6 @@ import com.canaydin.mediconnect.contact.dto.ContactMessageRequest;
 import com.canaydin.mediconnect.contact.dto.ContactMessageResponse;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
-
 public interface ContactMessageService {
 
     ContactMessageResponse findContactMessageById(Long id);
@@ -21,7 +19,6 @@ public interface ContactMessageService {
 
     ContactMessageResponse createContactMessage(ContactMessageRequest contactMessageRequest);
 
-    List<ContactMessageResponse> findAllContactMessages();
 
     void deleteContactMessage(Long id);
 
