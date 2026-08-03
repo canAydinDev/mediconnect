@@ -4,16 +4,16 @@ import com.canaydin.mediconnect.contact.dto.ContactMessageRequest;
 import com.canaydin.mediconnect.contact.dto.ContactMessageResponse;
 import com.canaydin.mediconnect.contact.service.ContactMessageService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Page;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 
 
 @RestController
@@ -35,12 +35,10 @@ public class ContactMessageController {
     }
 
 
-
     @GetMapping(value = "/admin/{id}", version = "1.0")
     public ResponseEntity<ContactMessageResponse> findContactMessageById(@PathVariable Long id) {
         return ResponseEntity.ok(contactMessageService.findContactMessageById(id));
     }
-
 
 
     @GetMapping(value = "/admin/by-status", version = "1.0")
@@ -84,8 +82,9 @@ public class ContactMessageController {
     }
 
     @PatchMapping(value = "/admin/{id}/status", version = "1.0")
-    public ResponseEntity<ContactMessageResponse> updateContactMessageStatus(
+    public ResponseEntity<Void> updateContactMessageStatus(
             @PathVariable Long id,
+
             @RequestParam
             @NotBlank(message = "Status cannot be blank")
             @Pattern(
@@ -94,7 +93,9 @@ public class ContactMessageController {
             )
             String status
     ) {
-        return ResponseEntity.ok(contactMessageService.updateStatus(id, status));
+        contactMessageService.updateStatus(id, status);
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping(value = "/admin/{id}", version = "1.0")

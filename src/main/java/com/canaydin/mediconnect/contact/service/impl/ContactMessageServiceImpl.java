@@ -1,11 +1,13 @@
 package com.canaydin.mediconnect.contact.service.impl;
 
+import com.canaydin.mediconnect.audit.AuditorAwareImpl;
 import com.canaydin.mediconnect.contact.dto.ContactMessageRequest;
 import com.canaydin.mediconnect.contact.dto.ContactMessageResponse;
 import com.canaydin.mediconnect.contact.entity.ContactMessage;
 import com.canaydin.mediconnect.contact.enums.ContactMessageStatus;
 import com.canaydin.mediconnect.contact.repository.ContactMessageRepository;
 import com.canaydin.mediconnect.contact.service.ContactMessageService;
+import com.canaydin.mediconnect.exception.InvalidEnumValueException;
 import com.canaydin.mediconnect.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -22,6 +25,7 @@ import java.util.List;
 public class ContactMessageServiceImpl implements ContactMessageService {
 
     private final ContactMessageRepository contactMessageRepository;
+    private final AuditorAwareImpl auditorAware;
 
 
     @Override
@@ -79,12 +83,35 @@ public class ContactMessageServiceImpl implements ContactMessageService {
 
     @Override
     @Transactional
-    public ContactMessageResponse updateStatus(Long id, String status) {
-        ContactMessage contactMessage = contactMessageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Contact Message", "id", id));
-        contactMessage.setStatus(ContactMessageStatus.valueOf(status));
+    public void updateStatus(Long id, String status) {
+        ContactMessageStatus newStatus;
 
-        return transformContactMessage(contactMessage);
+        try {
+            newStatus = ContactMessageStatus.valueOf(
+                    status.trim().toUpperCase()
+            );
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidEnumValueException("status", status);
+        }
 
+        String updatedBy = auditorAware
+                .getCurrentAuditor()
+                .orElse("AnonymousUser");
+
+        int updatedRows = contactMessageRepository.updateStatusById(
+                id,
+                newStatus,
+                Instant.now(),
+                updatedBy
+        );
+
+        if (updatedRows == 0) {
+            throw new ResourceNotFoundException(
+                    "Contact Message",
+                    "id",
+                    id
+            );
+        }
     }
 
     private ContactMessageResponse transformContactMessage(ContactMessage contactMessage) {

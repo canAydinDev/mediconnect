@@ -22,7 +22,8 @@ public interface ContactMessageService {
 
     void deleteContactMessage(Long id);
 
-    ContactMessageResponse updateStatus(Long id, String status);
+
+    void updateStatus(Long id, String status);
 
 }
 
