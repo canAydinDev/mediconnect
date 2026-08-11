@@ -1,14 +1,14 @@
 package com.canaydin.mediconnect.clinic.controller;
 
+import com.canaydin.mediconnect.clinic.dto.ClinicAdminDto;
 import com.canaydin.mediconnect.clinic.dto.ClinicDto;
 import com.canaydin.mediconnect.clinic.dto.ClinicRequestDto;
 import com.canaydin.mediconnect.clinic.service.ClinicService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/clinics")
+@Validated
 public class ClinicController {
 
     private final ClinicService clinicService;
@@ -26,7 +27,7 @@ public class ClinicController {
     }
 
     @GetMapping(value = "/{id}", version = "1.0")
-    public ResponseEntity<ClinicDto> getClinicById(@Valid  @PathVariable Long id) {
+    public ResponseEntity<ClinicDto> getClinicById(@Valid @PathVariable Long id) {
         return ResponseEntity.ok(clinicService.getClinicById(id));
     }
 
@@ -36,16 +37,22 @@ public class ClinicController {
         return ResponseEntity.status(HttpStatus.CREATED).body(clinicService.saveClinic(clinicRequestDto));
     }
 
-    @PutMapping(value = "/{id}", version = "1.0")
-    public ResponseEntity<ClinicDto> updateClinicById(
+    @PutMapping(value = "/admin/{id}", version = "1.0")
+    public ResponseEntity<ClinicAdminDto> updateClinicById(
             @PathVariable Long id,
             @Valid @RequestBody ClinicRequestDto clinicRequestDto
     ) {
-        return ResponseEntity.ok(clinicService.updateClinicById(id, clinicRequestDto));
+        return ResponseEntity.ok(
+                clinicService.updateClinicById(
+                        id,
+                        clinicRequestDto
+                )
+        );
     }
 
+
     @DeleteMapping(value = "/{id}", version = "1.0")
-    public ResponseEntity<Void> deleteClinicById( @PathVariable  Long id) {
+    public ResponseEntity<Void> deleteClinicById(@PathVariable Long id) {
         clinicService.deleteClinicById(id);
         return ResponseEntity.noContent().build();
     }
