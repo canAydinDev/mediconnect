@@ -1,5 +1,6 @@
 package com.canaydin.mediconnect.security.user.entity;
 
+import com.canaydin.mediconnect.clinic.entity.Clinic;
 import com.canaydin.mediconnect.common.entity.BaseEntity;
 import com.canaydin.mediconnect.security.user.enums.Role;
 import jakarta.persistence.*;
@@ -34,5 +35,9 @@ public class UserAccount extends BaseEntity {
     @Builder.Default
     @Column(nullable = false)
     private boolean active = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "clinic_id")
+    private Clinic clinic;
 }
 

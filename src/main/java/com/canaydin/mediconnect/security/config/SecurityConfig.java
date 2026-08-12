@@ -90,9 +90,15 @@ public class SecurityConfig {
                                 "/api/contact-messages/admin",
                                 "/api/contact-messages/admin/**"
                         ).hasRole("ADMIN")
+
                         .requestMatchers(
                                 "/api/clinics/admin",
                                 "/api/clinics/admin/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                "/api/users/admin",
+                                "/api/users/admin/**"
                         ).hasRole("ADMIN")
 
                         .anyRequest().authenticated()

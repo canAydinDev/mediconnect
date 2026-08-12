@@ -1,5 +1,7 @@
 package com.canaydin.mediconnect.clinic.dto;
 
+import com.canaydin.mediconnect.clinic.enums.ClinicStatus;
+
 import java.math.BigDecimal;
 
 public record ClinicAdminDto(
@@ -12,6 +14,7 @@ public record ClinicAdminDto(
         String phone,
         String email,
         BigDecimal rating,
-        String description
+        String description,
+        ClinicStatus status
 ) {
 }

@@ -3,20 +3,32 @@ package com.canaydin.mediconnect.clinic.service;
 import com.canaydin.mediconnect.clinic.dto.ClinicAdminDto;
 import com.canaydin.mediconnect.clinic.dto.ClinicDto;
 import com.canaydin.mediconnect.clinic.dto.ClinicRequestDto;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
 
 public interface ClinicService {
 
-    List<ClinicDto> getAllClinics();
+    Page<ClinicDto> getAllClinics(int page, int size, String sortBy, String direction);
+
+    Page<ClinicAdminDto> getAllClinicsForAdmin(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    );
 
     ClinicDto getClinicById(Long id);
 
+    ClinicAdminDto getClinicByIdForAdmin(Long id);
 
-    ClinicDto saveClinic(ClinicRequestDto clinicRequestDto);
+
+    ClinicAdminDto saveClinic(ClinicRequestDto clinicRequestDto);
 
     ClinicAdminDto updateClinicById(Long id, ClinicRequestDto clinicRequestDto);
 
+    ClinicAdminDto updateClinicStatus(
+            Long id,
+            String status
+    );
 
-    void deleteClinicById(Long id);
 }

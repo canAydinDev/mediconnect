@@ -33,4 +33,6 @@ public class UserAccountDetailsService implements UserDetailsService {
                 .authorities("ROLE_" + userAccount.getRole().name())
                 .build();
     }
+
+ 
 }
