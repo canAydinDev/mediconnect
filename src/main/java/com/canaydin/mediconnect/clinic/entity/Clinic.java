@@ -1,5 +1,6 @@
 package com.canaydin.mediconnect.clinic.entity;
 
+import com.canaydin.mediconnect.clinic.enums.ClinicStatus;
 import com.canaydin.mediconnect.common.entity.BaseEntity;
 import com.canaydin.mediconnect.doctor.entity.Doctor;
 import jakarta.persistence.*;
@@ -8,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 
 @Entity
@@ -54,6 +54,9 @@ public class Clinic extends BaseEntity {
     @OneToMany(mappedBy = "clinic")
     private List<Doctor> doctors;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ClinicStatus status = ClinicStatus.ACTIVE;
 
 
 }

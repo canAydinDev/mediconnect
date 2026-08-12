@@ -4,10 +4,15 @@ import com.canaydin.mediconnect.clinic.dto.ClinicAdminDto;
 import com.canaydin.mediconnect.clinic.dto.ClinicDto;
 import com.canaydin.mediconnect.clinic.dto.ClinicRequestDto;
 import com.canaydin.mediconnect.clinic.entity.Clinic;
+import com.canaydin.mediconnect.clinic.enums.ClinicStatus;
 import com.canaydin.mediconnect.clinic.repository.ClinicRepository;
 import com.canaydin.mediconnect.clinic.service.ClinicService;
 import com.canaydin.mediconnect.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,11 +27,47 @@ public class ClinicServiceImpl implements ClinicService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ClinicDto> getAllClinics() {
-        return clinicRepository.findAll()
-                .stream()
-                .map(this::mapToClinicDto)
-                .toList();
+    public Page<ClinicDto> getAllClinics(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        Sort sort = buildSort(sortBy, direction);
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sort
+        );
+
+        return clinicRepository.findByStatus(
+                        ClinicStatus.ACTIVE,
+                        pageable
+                )
+                .map(this::mapToClinicDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ClinicAdminDto> getAllClinicsForAdmin(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        Sort sort = buildSort(sortBy, direction);
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sort
+        );
+
+        return clinicRepository.findAll(pageable)
+                .map(this::mapToAdminClinicDto);
     }
 
 
@@ -34,7 +75,11 @@ public class ClinicServiceImpl implements ClinicService {
     @Transactional(readOnly = true)
     public ClinicDto getClinicById(Long id) {
 
-        Clinic clinic = clinicRepository.findById(id)
+        Clinic clinic = clinicRepository
+                .findByIdAndStatus(
+                        id,
+                        ClinicStatus.ACTIVE
+                )
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Clinic",
@@ -46,10 +91,26 @@ public class ClinicServiceImpl implements ClinicService {
         return mapToClinicDto(clinic);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ClinicAdminDto getClinicByIdForAdmin(Long id) {
+
+        Clinic clinic = clinicRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Clinic",
+                                "id",
+                                id
+                        )
+                );
+
+        return mapToAdminClinicDto(clinic);
+    }
+
 
     @Override
     @Transactional
-    public ClinicDto saveClinic(
+    public ClinicAdminDto saveClinic(
             ClinicRequestDto clinicRequestDto
     ) {
 
@@ -58,7 +119,7 @@ public class ClinicServiceImpl implements ClinicService {
         Clinic savedClinic =
                 clinicRepository.save(clinic);
 
-        return mapToClinicDto(savedClinic);
+        return mapToAdminClinicDto(savedClinic);
     }
 
 
@@ -91,10 +152,12 @@ public class ClinicServiceImpl implements ClinicService {
         return mapToAdminClinicDto(clinic);
     }
 
-
     @Override
     @Transactional
-    public void deleteClinicById(Long id) {
+    public ClinicAdminDto updateClinicStatus(
+            Long id,
+            String status
+    ) {
 
         Clinic clinic = clinicRepository.findById(id)
                 .orElseThrow(() ->
@@ -105,7 +168,14 @@ public class ClinicServiceImpl implements ClinicService {
                         )
                 );
 
-        clinicRepository.delete(clinic);
+        ClinicStatus clinicStatus =
+                ClinicStatus.valueOf(
+                        status.trim().toUpperCase()
+                );
+
+        clinic.setStatus(clinicStatus);
+
+        return mapToAdminClinicDto(clinic);
     }
 
 
@@ -134,7 +204,8 @@ public class ClinicServiceImpl implements ClinicService {
                 clinic.getPhone(),
                 clinic.getEmail(),
                 clinic.getRating(),
-                clinic.getDescription()
+                clinic.getDescription(),
+                clinic.getStatus()
         );
     }
 
@@ -154,7 +225,30 @@ public class ClinicServiceImpl implements ClinicService {
         clinic.setEmail(clinicRequestDto.email());
         clinic.setRating(clinicRequestDto.rating());
         clinic.setDescription(clinicRequestDto.description());
+        clinic.setStatus(ClinicStatus.ACTIVE);
 
         return clinic;
+    }
+
+    private Sort buildSort(
+            String sortBy,
+            String direction
+    ) {
+
+        List<String> allowedSortFields = List.of(
+                "id",
+                "name",
+                "category",
+                "city",
+                "rating"
+        );
+
+        if (!allowedSortFields.contains(sortBy)) {
+            sortBy = "name";
+        }
+
+        return direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
     }
 }
