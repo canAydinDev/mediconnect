@@ -24,4 +24,12 @@ public interface DoctorService {
     List<DoctorDto> getActiveDoctors();
 
     List<DoctorDto> getActiveDoctorsByClinicId(Long clinicId);
+
+    List<DoctorDto> getMyClinicDoctors(String clinicAdminEmail);
+
+    DoctorDto updateMyClinicDoctorActiveStatus(
+            Long doctorId,
+            Boolean active,
+            String clinicAdminEmail
+    );
 }

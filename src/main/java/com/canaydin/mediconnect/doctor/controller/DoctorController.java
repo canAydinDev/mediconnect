@@ -1,13 +1,16 @@
 package com.canaydin.mediconnect.doctor.controller;
 
+import com.canaydin.mediconnect.doctor.dto.DoctorActiveStatusRequest;
 import com.canaydin.mediconnect.doctor.dto.DoctorDto;
 import com.canaydin.mediconnect.doctor.dto.DoctorRequestDto;
 import com.canaydin.mediconnect.doctor.service.DoctorService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,6 +66,47 @@ public class DoctorController {
         DoctorDto doctorDto = doctorService.getDoctorById(id);
 
         return ResponseEntity.ok(doctorDto);
+    }
+
+    @GetMapping(
+            value = "/clinic-admin",
+            version = "1.0"
+    )
+    public ResponseEntity<List<DoctorDto>> getMyClinicDoctors(
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                doctorService.getMyClinicDoctors(
+                        authentication.getName()
+                )
+        );
+    }
+
+    @PatchMapping(
+            value = "/clinic-admin/{doctorId}/active",
+            version = "1.0"
+    )
+    public ResponseEntity<DoctorDto> updateMyClinicDoctorActiveStatus(
+
+            @PathVariable
+            @Positive(message = "Doctor id must be greater than 0")
+            Long doctorId,
+
+            @Valid
+            @RequestBody
+            DoctorActiveStatusRequest request,
+
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                doctorService.updateMyClinicDoctorActiveStatus(
+                        doctorId,
+                        request.active(),
+                        authentication.getName()
+                )
+        );
     }
 
     @PutMapping(value = "/{id}", version = "1.0")
