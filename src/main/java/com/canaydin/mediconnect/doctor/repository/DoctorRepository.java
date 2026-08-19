@@ -19,50 +19,62 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     List<Doctor> findByClinicIdAndActiveTrue(Long clinicId);
 
     @Query("""
-           select d
-           from Doctor d
-           join fetch d.clinic
-           """)
+            select d
+            from Doctor d
+            join fetch d.clinic
+            """)
     List<Doctor> findAllWithClinic();
 
     @Query("""
-           select d
-           from Doctor d
-           join fetch d.clinic
-           where d.id = :id
-           """)
+            select d
+            from Doctor d
+            join fetch d.clinic
+            where d.id = :id
+            """)
     Optional<Doctor> findByIdWithClinic(@Param("id") Long id);
 
     @Query("""
-           select d
-           from Doctor d
-           join fetch d.clinic
-           where d.specialty = :specialty
-           """)
+            select d
+            from Doctor d
+            join fetch d.clinic
+            where d.specialty = :specialty
+            """)
     List<Doctor> findBySpecialtyWithClinic(@Param("specialty") String specialty);
 
     @Query("""
-           select d
-           from Doctor d
-           join fetch d.clinic
-           where d.active = true
-           """)
+            select d
+            from Doctor d
+            join fetch d.clinic
+            where d.active = true
+            """)
     List<Doctor> findActiveDoctorsWithClinic();
 
     @Query("""
-           select d
-           from Doctor d
-           join fetch d.clinic
-           where d.clinic.id = :clinicId
-           """)
+            select d
+            from Doctor d
+            join fetch d.clinic
+            where d.clinic.id = :clinicId
+            """)
     List<Doctor> findByClinicIdWithClinic(@Param("clinicId") Long clinicId);
 
     @Query("""
-           select d
-           from Doctor d
-           join fetch d.clinic
-           where d.clinic.id = :clinicId
-           and d.active = true
-           """)
+            select d
+            from Doctor d
+            join fetch d.clinic
+            where d.clinic.id = :clinicId
+            and d.active = true
+            """)
     List<Doctor> findActiveDoctorsByClinicIdWithClinic(@Param("clinicId") Long clinicId);
+
+    @Query("""
+            select d
+            from Doctor d
+            join fetch d.clinic
+            where d.id = :doctorId
+            and d.clinic.id = :clinicId
+            """)
+    Optional<Doctor> findByIdAndClinicIdWithClinic(
+            @Param("doctorId") Long doctorId,
+            @Param("clinicId") Long clinicId
+    );
 }

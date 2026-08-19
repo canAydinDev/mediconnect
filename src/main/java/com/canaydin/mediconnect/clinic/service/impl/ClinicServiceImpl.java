@@ -9,6 +9,9 @@ import com.canaydin.mediconnect.clinic.repository.ClinicRepository;
 import com.canaydin.mediconnect.clinic.service.ClinicService;
 import com.canaydin.mediconnect.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +29,9 @@ public class ClinicServiceImpl implements ClinicService {
 
 
     @Override
+    @Cacheable(
+            cacheNames = "clinicList"
+    )
     @Transactional(readOnly = true)
     public Page<ClinicDto> getAllClinics(
             int page,
@@ -72,6 +78,8 @@ public class ClinicServiceImpl implements ClinicService {
 
 
     @Override
+    @Cacheable(cacheNames = "clinicById",
+            key = "#id")
     @Transactional(readOnly = true)
     public ClinicDto getClinicById(Long id) {
 
@@ -109,6 +117,10 @@ public class ClinicServiceImpl implements ClinicService {
 
 
     @Override
+    @CacheEvict(
+            cacheNames = "clinicList",
+            allEntries = true
+    )
     @Transactional
     public ClinicAdminDto saveClinic(
             ClinicRequestDto clinicRequestDto
@@ -124,6 +136,16 @@ public class ClinicServiceImpl implements ClinicService {
 
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(
+                    cacheNames = "clinicById",
+                    key = "#id"
+            ),
+            @CacheEvict(
+                    cacheNames = "clinicList",
+                    allEntries = true
+            )
+    })
     @Transactional
     public ClinicAdminDto updateClinicById(
             Long id,
@@ -153,6 +175,16 @@ public class ClinicServiceImpl implements ClinicService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(
+                    cacheNames = "clinicById",
+                    key = "#id"
+            ),
+            @CacheEvict(
+                    cacheNames = "clinicList",
+                    allEntries = true
+            )
+    })
     @Transactional
     public ClinicAdminDto updateClinicStatus(
             Long id,

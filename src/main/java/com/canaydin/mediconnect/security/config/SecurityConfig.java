@@ -73,6 +73,7 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
+
                         .requestMatchers("/api/auth/**").permitAll()
 
                         .requestMatchers(
@@ -84,7 +85,14 @@ public class SecurityConfig {
                                 "/api/v3/api-docs/**"
                         ).permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/contact-messages").permitAll()
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/contact-messages"
+                        ).permitAll()
+
+                        // =========================
+                        // ADMIN
+                        // =========================
 
                         .requestMatchers(
                                 "/api/contact-messages/admin",
@@ -100,6 +108,37 @@ public class SecurityConfig {
                                 "/api/users/admin",
                                 "/api/users/admin/**"
                         ).hasRole("ADMIN")
+
+
+                        // =========================
+                        // CLINIC ADMIN
+                        // =========================
+
+                        .requestMatchers(
+                                "/api/doctors/clinic-admin",
+                                "/api/doctors/clinic-admin/**"
+                        ).hasRole("CLINIC_ADMIN")
+
+
+                        // =========================
+                        // DOCTOR ADMIN OPERATIONS
+                        // =========================
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/doctors"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/doctors/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/doctors/**"
+                        ).hasRole("ADMIN")
+
 
                         .anyRequest().authenticated()
                 )
