@@ -77,4 +77,15 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
             @Param("doctorId") Long doctorId,
             @Param("clinicId") Long clinicId
     );
+
+    @Query("""
+            select d
+            from Doctor d
+            join fetch d.clinic
+            where d.id = :id
+            and d.active = true
+            """)
+    Optional<Doctor> findActiveDoctorByIdWithClinic(
+            @Param("id") Long id
+    );
 }

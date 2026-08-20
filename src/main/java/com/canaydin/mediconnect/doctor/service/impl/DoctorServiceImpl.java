@@ -1,7 +1,9 @@
 package com.canaydin.mediconnect.doctor.service.impl;
 
 import com.canaydin.mediconnect.clinic.entity.Clinic;
+import com.canaydin.mediconnect.clinic.enums.ClinicStatus;
 import com.canaydin.mediconnect.clinic.repository.ClinicRepository;
+import com.canaydin.mediconnect.doctor.dto.ClinicAdminDoctorRequestDto;
 import com.canaydin.mediconnect.doctor.dto.DoctorDto;
 import com.canaydin.mediconnect.doctor.dto.DoctorRequestDto;
 import com.canaydin.mediconnect.doctor.entity.Doctor;
@@ -74,9 +76,79 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    public DoctorDto updateDoctorActiveStatus(
+            Long id,
+            Boolean active
+    ) {
+
+        Doctor doctor = doctorRepository
+                .findByIdWithClinic(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Doctor",
+                                "id",
+                                id
+                        )
+                );
+
+        doctor.setActive(active);
+
+        return mapToDoctorDto(doctor);
+    }
+
+    @Override
+    @Transactional
     public void deleteDoctor(Long id) {
-        Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor", "id", id));
+
+        Doctor doctor = doctorRepository
+                .findByIdWithClinic(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Doctor",
+                                "id",
+                                id
+                        )
+                );
+
+        if (Boolean.TRUE.equals(doctor.getActive())) {
+            throw new IllegalStateException(
+                    "Active doctor cannot be deleted. Deactivate the doctor first."
+            );
+        }
+
+        doctorRepository.delete(doctor);
+    }
+
+    @Override
+    @Transactional
+    public void deleteMyClinicDoctor(
+            Long doctorId,
+            String clinicAdminEmail
+    ) {
+
+        Clinic clinic =
+                getAssignedClinicForClinicAdmin(
+                        clinicAdminEmail
+                );
+
+        Doctor doctor = doctorRepository
+                .findByIdAndClinicIdWithClinic(
+                        doctorId,
+                        clinic.getId()
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Doctor",
+                                "id",
+                                doctorId
+                        )
+                );
+
+        if (Boolean.TRUE.equals(doctor.getActive())) {
+            throw new IllegalStateException(
+                    "Active doctor cannot be deleted. Deactivate the doctor first."
+            );
+        }
 
         doctorRepository.delete(doctor);
     }
@@ -85,7 +157,16 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional(readOnly = true)
     public DoctorDto getDoctorById(Long id) {
 
-        Doctor doctor = doctorRepository.findByIdWithClinic(id).orElseThrow(() -> new ResourceNotFoundException("Doctor", "id", id));
+        Doctor doctor = doctorRepository
+                .findActiveDoctorByIdWithClinic(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Doctor",
+                                "id",
+                                id
+                        )
+                );
+
         return mapToDoctorDto(doctor);
     }
 
@@ -153,6 +234,47 @@ public class DoctorServiceImpl implements DoctorService {
                 .stream()
                 .map(this::mapToDoctorDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public DoctorDto createDoctorForMyClinic(
+            ClinicAdminDoctorRequestDto doctorRequestDto,
+            String clinicAdminEmail
+    ) {
+
+        Clinic clinic =
+                getAssignedClinicForClinicAdmin(
+                        clinicAdminEmail
+                );
+
+        if (clinic.getStatus() != ClinicStatus.ACTIVE) {
+            throw new IllegalStateException(
+                    "Doctor cannot be added to an inactive clinic"
+            );
+        }
+
+        Doctor doctor = new Doctor();
+
+        doctor.setFullName(doctorRequestDto.fullName());
+        doctor.setTitle(doctorRequestDto.title());
+        doctor.setSpecialty(doctorRequestDto.specialty());
+        doctor.setEmail(doctorRequestDto.email());
+        doctor.setPhone(doctorRequestDto.phone());
+        doctor.setBio(doctorRequestDto.bio());
+        doctor.setImageUrl(doctorRequestDto.imageUrl());
+        doctor.setExperienceYears(
+                doctorRequestDto.experienceYears()
+        );
+
+        doctor.setActive(false);
+
+        doctor.setClinic(clinic);
+
+        Doctor savedDoctor =
+                doctorRepository.save(doctor);
+
+        return mapToDoctorDto(savedDoctor);
     }
 
     @Override

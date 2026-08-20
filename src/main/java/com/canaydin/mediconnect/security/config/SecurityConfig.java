@@ -133,6 +133,11 @@ public class SecurityConfig {
                                 HttpMethod.PUT,
                                 "/api/doctors/**"
                         ).hasRole("ADMIN")
+                        
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/doctors/*/active"
+                        ).hasRole("ADMIN")
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
