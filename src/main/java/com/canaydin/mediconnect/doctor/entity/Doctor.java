@@ -43,7 +43,7 @@ public class Doctor extends BaseEntity {
     @Column(name = "experience_years")
     private Integer experienceYears;
 
-    @Column(name = "active")
+    @Column(name = "active", nullable = false)
     private Boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
