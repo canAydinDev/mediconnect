@@ -129,7 +129,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException exception,
             WebRequest webRequest
-    ){
+    ) {
         ErrorResponse errorResponse = new ErrorResponse(
                 webRequest.getDescription(false),
                 HttpStatus.NOT_FOUND.toString(),
@@ -139,21 +139,36 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler(BusinessConflictException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessConflictException(
+            BusinessConflictException exception,
+            WebRequest webRequest
+    ) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                webRequest.getDescription(false),
+                HttpStatus.CONFLICT.toString(),
+                exception.getMessage(),
+                Instant.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception exception,
             WebRequest webRequest
-    ){
+    ) {
         ErrorResponse errorResponse = new ErrorResponse(
                 webRequest.getDescription(false),
                 HttpStatus.INTERNAL_SERVER_ERROR.toString(),
                 exception.getMessage(),
                 Instant.now()
         );
-          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
-
-
 
 
 }
