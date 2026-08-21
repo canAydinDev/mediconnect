@@ -90,6 +90,27 @@ public class SecurityConfig {
                                 "/api/contact-messages"
                         ).permitAll()
 
+
+                        // =========================
+                        // PATIENT
+                        // =========================
+
+                        .requestMatchers(
+                                "/api/patients/me",
+                                "/api/patients/me/**"
+                        ).hasRole("PATIENT")
+
+
+                        // =========================
+                        // CLINIC ADMIN
+                        // =========================
+
+                        .requestMatchers(
+                                "/api/doctors/clinic-admin",
+                                "/api/doctors/clinic-admin/**"
+                        ).hasRole("CLINIC_ADMIN")
+
+
                         // =========================
                         // ADMIN
                         // =========================
@@ -109,21 +130,6 @@ public class SecurityConfig {
                                 "/api/users/admin/**"
                         ).hasRole("ADMIN")
 
-
-                        // =========================
-                        // CLINIC ADMIN
-                        // =========================
-
-                        .requestMatchers(
-                                "/api/doctors/clinic-admin",
-                                "/api/doctors/clinic-admin/**"
-                        ).hasRole("CLINIC_ADMIN")
-
-
-                        // =========================
-                        // DOCTOR ADMIN OPERATIONS
-                        // =========================
-
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/doctors"
@@ -133,7 +139,7 @@ public class SecurityConfig {
                                 HttpMethod.PUT,
                                 "/api/doctors/**"
                         ).hasRole("ADMIN")
-                        
+
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/doctors/*/active"
@@ -141,7 +147,7 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
-                                "/api/doctors/**"
+                                "/api/doctors/*"
                         ).hasRole("ADMIN")
 
 
