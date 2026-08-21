@@ -1,6 +1,7 @@
 package com.canaydin.mediconnect.patient.entity;
 
 import com.canaydin.mediconnect.common.entity.BaseEntity;
+import com.canaydin.mediconnect.doctor.entity.Doctor;
 import com.canaydin.mediconnect.security.user.entity.UserAccount;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -69,4 +72,16 @@ public class PatientProfile extends BaseEntity {
             length = 100
     )
     private String profileImageType;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "patient_favorite_doctors",
+            joinColumns = @JoinColumn(
+                    name = "patient_profile_id"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "doctor_id"
+            )
+    )
+    private Set<Doctor> favoriteDoctors = new HashSet<>();
 }
