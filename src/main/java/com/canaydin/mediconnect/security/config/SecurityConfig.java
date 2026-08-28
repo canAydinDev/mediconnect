@@ -1,9 +1,12 @@
 package com.canaydin.mediconnect.security.config;
 
+import com.canaydin.mediconnect.config.properties.CorsProperties;
+
 import com.canaydin.mediconnect.security.jwt.JwtAuthenticationFilter;
 import com.canaydin.mediconnect.security.user.service.UserAccountDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,64 +20,194 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
+@EnableConfigurationProperties(CorsProperties.class)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CorsProperties corsProperties;
     private final UserAccountDetailsService userAccountDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+
+    // =====================================================
+    // AUTHENTICATION PROVIDER
+    // =====================================================
+
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider =
-                new DaoAuthenticationProvider(userAccountDetailsService);
 
-        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        DaoAuthenticationProvider authenticationProvider =
+                new DaoAuthenticationProvider(
+                        userAccountDetailsService
+                );
+
+        authenticationProvider.setPasswordEncoder(
+                passwordEncoder
+        );
 
         return authenticationProvider;
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager() {
-        return new ProviderManager(authenticationProvider());
-    }
+
+    // =====================================================
+    // AUTHENTICATION MANAGER
+    // =====================================================
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public AuthenticationManager authenticationManager() {
+
+        return new ProviderManager(
+                authenticationProvider()
+        );
+    }
+
+
+    // =====================================================
+    // CORS
+    // =====================================================
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration =
+                new CorsConfiguration();
+
+        configuration.setAllowedOrigins(
+                corsProperties.allowedOrigins()
+        );
+
+        configuration.setAllowedMethods(
+                corsProperties.allowedMethods()
+        );
+
+        configuration.setAllowedHeaders(
+                corsProperties.allowedHeaders()
+        );
+
+        configuration.setAllowCredentials(
+                corsProperties.allowCredentials()
+        );
+
+        configuration.setMaxAge(
+                corsProperties.maxAge().getSeconds()
+        );
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
+
+        return source;
+    }
+
+
+    // =====================================================
+    // SECURITY FILTER CHAIN
+    // =====================================================
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
+
         return http
+
+                // =========================
+                // CORS
+                // =========================
+
+                .cors(cors -> cors
+                        .configurationSource(
+                                corsConfigurationSource()
+                        )
+                )
+
+
+                // =========================
+                // STATELESS API
+                // =========================
+
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
+
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
                 )
+
+
+                // =========================
+                // EXCEPTION HANDLING
+                // =========================
+
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType("application/json");
-                            response.getWriter().write("""
-                                    {
-                                      "error": "Unauthorized",
-                                      "message": "Authentication is required to access this resource"
-                                    }
-                                    """);
-                        })
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                            response.setContentType("application/json");
-                            response.getWriter().write("""
-                                    {
-                                      "error": "AccessDenied",
-                                      "message": "You do not have permission to access this resource"
-                                    }
-                                    """);
-                        })
+
+                        .authenticationEntryPoint(
+                                (request, response, authException) -> {
+
+                                    response.setStatus(
+                                            HttpServletResponse.SC_UNAUTHORIZED
+                                    );
+
+                                    response.setContentType(
+                                            "application/json"
+                                    );
+
+                                    response.getWriter().write("""
+                                            {
+                                              "error": "Unauthorized",
+                                              "message": "Authentication is required to access this resource"
+                                            }
+                                            """);
+                                }
+                        )
+
+                        .accessDeniedHandler(
+                                (request, response, accessDeniedException) -> {
+
+                                    response.setStatus(
+                                            HttpServletResponse.SC_FORBIDDEN
+                                    );
+
+                                    response.setContentType(
+                                            "application/json"
+                                    );
+
+                                    response.getWriter().write("""
+                                            {
+                                              "error": "AccessDenied",
+                                              "message": "You do not have permission to access this resource"
+                                            }
+                                            """);
+                                }
+                        )
                 )
+
+
+                // =========================
+                // AUTHORIZATION
+                // =========================
+
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // =========================
+                        // PUBLIC
+                        // =========================
+
+                        .requestMatchers(
+                                "/api/auth/**"
+                        ).permitAll()
 
                         .requestMatchers(
                                 "/swagger-ui.html",
@@ -151,10 +284,28 @@ public class SecurityConfig {
                         ).hasRole("ADMIN")
 
 
-                        .anyRequest().authenticated()
+                        // =========================
+                        // OTHER AUTHENTICATED APIs
+                        // =========================
+
+                        .anyRequest()
+                        .authenticated()
                 )
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
+
+                // =========================
+                // AUTHENTICATION
+                // =========================
+
+                .authenticationProvider(
+                        authenticationProvider()
+                )
+
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                )
+
                 .build();
     }
 }
