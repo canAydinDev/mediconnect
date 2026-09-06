@@ -243,6 +243,11 @@ public class SecurityConfig {
                                 "/api/doctors/clinic-admin/**"
                         ).hasRole("CLINIC_ADMIN")
 
+                        .requestMatchers(
+                                "/api/appointments/clinic-admin",
+                                "/api/appointments/clinic-admin/**"
+                        ).hasRole("CLINIC_ADMIN")
+
 
                         // =========================
                         // ADMIN

@@ -62,4 +62,10 @@ public class Appointment extends BaseEntity {
             columnDefinition = "text"
     )
     private String reason;
+
+    @Column(
+            name = "internal_notes",
+            columnDefinition = "text"
+    )
+    private String internalNotes;
 }

@@ -54,4 +54,34 @@ public interface AppointmentRepository
             @Param("patientId")
             Long patientId
     );
+
+    @Query("""
+            select a
+            from Appointment a
+            join fetch a.patient p
+            join fetch a.doctor d
+            join fetch d.clinic c
+            where d.id = :doctorId
+              and c.id = :clinicId
+            order by a.appointmentAt asc
+            """)
+    List<Appointment> findByDoctorIdAndClinicIdForClinicAdmin(
+            @Param("doctorId") Long doctorId,
+            @Param("clinicId") Long clinicId
+    );
+
+
+    @Query("""
+            select a
+            from Appointment a
+            join fetch a.patient p
+            join fetch a.doctor d
+            join fetch d.clinic c
+            where a.id = :appointmentId
+              and c.id = :clinicId
+            """)
+    Optional<Appointment> findByIdAndClinicIdForClinicAdmin(
+            @Param("appointmentId") Long appointmentId,
+            @Param("clinicId") Long clinicId
+    );
 }
