@@ -1,6 +1,9 @@
 package com.canaydin.mediconnect.exception;
 
+import io.micrometer.tracing.Tracer;
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,22 +17,27 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final Tracer tracer;
 
     @ExceptionHandler(InvalidEnumValueException.class)
     public ResponseEntity<ErrorResponse> handleInvalidEnumValueException(
             InvalidEnumValueException exception,
             WebRequest webRequest
     ) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                webRequest.getDescription(false),
-                HttpStatus.BAD_REQUEST.toString(),
-                exception.getMessage(),
-                Instant.now()
+        ErrorResponse errorResponse = buildErrorResponse(
+                webRequest,
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -40,13 +48,18 @@ public class GlobalExceptionHandler {
 
         exception.getConstraintViolations()
                 .forEach(constraintViolation -> {
-                    String propertyPath = constraintViolation.getPropertyPath().toString();
+                    String propertyPath = constraintViolation
+                            .getPropertyPath()
+                            .toString();
 
                     String fieldName = propertyPath.contains(".")
                             ? propertyPath.substring(propertyPath.lastIndexOf(".") + 1)
                             : propertyPath;
 
-                    errors.put(fieldName, constraintViolation.getMessage());
+                    errors.put(
+                            fieldName,
+                            constraintViolation.getMessage()
+                    );
                 });
 
         return ResponseEntity
@@ -103,14 +116,15 @@ public class GlobalExceptionHandler {
             DuplicateResourceException exception,
             WebRequest webRequest
     ) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                webRequest.getDescription(false),
-                HttpStatus.CONFLICT.toString(),
-                exception.getMessage(),
-                Instant.now()
+        ErrorResponse errorResponse = buildErrorResponse(
+                webRequest,
+                HttpStatus.CONFLICT,
+                exception.getMessage()
         );
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(errorResponse);
     }
 
     @ExceptionHandler(WeakPasswordException.class)
@@ -118,7 +132,11 @@ public class GlobalExceptionHandler {
             WeakPasswordException exception
     ) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("password", exception.getMessage());
+
+        errors.put(
+                "password",
+                exception.getMessage()
+        );
 
         return ResponseEntity
                 .badRequest()
@@ -130,13 +148,15 @@ public class GlobalExceptionHandler {
             ResourceNotFoundException exception,
             WebRequest webRequest
     ) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                webRequest.getDescription(false),
-                HttpStatus.NOT_FOUND.toString(),
-                exception.getMessage(),
-                Instant.now()
+        ErrorResponse errorResponse = buildErrorResponse(
+                webRequest,
+                HttpStatus.NOT_FOUND,
+                exception.getMessage()
         );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(errorResponse);
     }
 
     @ExceptionHandler(BusinessConflictException.class)
@@ -144,11 +164,10 @@ public class GlobalExceptionHandler {
             BusinessConflictException exception,
             WebRequest webRequest
     ) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                webRequest.getDescription(false),
-                HttpStatus.CONFLICT.toString(),
-                exception.getMessage(),
-                Instant.now()
+        ErrorResponse errorResponse = buildErrorResponse(
+                webRequest,
+                HttpStatus.CONFLICT,
+                exception.getMessage()
         );
 
         return ResponseEntity
@@ -161,14 +180,46 @@ public class GlobalExceptionHandler {
             Exception exception,
             WebRequest webRequest
     ) {
+        String traceId = getCurrentTraceId();
+
+        log.error(
+                "Unexpected error occurred. traceId={}",
+                traceId,
+                exception
+        );
+
         ErrorResponse errorResponse = new ErrorResponse(
                 webRequest.getDescription(false),
                 HttpStatus.INTERNAL_SERVER_ERROR.toString(),
-                exception.getMessage(),
-                Instant.now()
+                "An unexpected error occurred.",
+                Instant.now(),
+                traceId
         );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(errorResponse);
     }
 
+    private ErrorResponse buildErrorResponse(
+            WebRequest webRequest,
+            HttpStatus status,
+            String message
+    ) {
+        return new ErrorResponse(
+                webRequest.getDescription(false),
+                status.toString(),
+                message,
+                Instant.now(),
+                getCurrentTraceId()
+        );
+    }
 
+    private String getCurrentTraceId() {
+        var span = tracer.currentSpan();
+
+        return span != null
+                ? span.context().traceId()
+                : null;
+    }
 }

@@ -6,6 +6,7 @@ public record ErrorResponse(
         String apiPath,
         String errorCode,
         String errorMessage,
-        Instant errorTime
+        Instant errorTime,
+        String traceId
 ) {
 }

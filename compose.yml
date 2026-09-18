@@ -11,6 +11,14 @@ services:
     volumes:
       - mediconnect_postgres_data:/var/lib/postgresql/data
 
+  grafana-lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: mediconnect-lgtm
+    ports:
+      - "3001:3000"
+      - "4317:4317"
+      - "4318:4318"
+
 volumes:
   mediconnect_postgres_data:
     name: mediconnect_postgres_data
