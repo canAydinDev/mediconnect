@@ -1,37 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOGS" value="${LOG_PATH:-logs}" />
+    <property name="LOGS" value="${LOG_PATH:-logs}"/>
 
-    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOGS}/mediconnect.log</file>
-
+    <!-- ========================= -->
+    <!-- CONSOLE -->
+    <!-- ========================= -->
+    <appender name="Console"
+              class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{64} - %msg%n</pattern>
         </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- ROLLING FILE -->
+    <!-- ========================= -->
+    <appender name="RollingFile"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <file>${LOGS}/mediconnect.log</file>
+
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [traceId=%X{traceId:-} spanId=%X{spanId:-}]
+                %logger{64} - %msg%n
+            </pattern>
+        </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOGS}/archive/mediconnect.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>
+                ${LOGS}/archive/mediconnect.%d{yyyy-MM-dd}.%i.log
+            </fileNamePattern>
+
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
     </appender>
 
+    <!-- ========================= -->
+    <!-- OPENTELEMETRY -->
+    <!-- ========================= -->
+    <appender name="OTEL"
+              class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+    </appender>
+
+    <!-- ========================= -->
+    <!-- ROOT LOGGER -->
+    <!-- ========================= -->
     <root level="INFO">
-        <appender-ref ref="Console" />
-        <appender-ref ref="RollingFile" />
+        <appender-ref ref="Console"/>
+        <appender-ref ref="RollingFile"/>
+        <appender-ref ref="OTEL"/>
     </root>
 
-    <logger name="com.canaydin.mediconnect" level="DEBUG" additivity="false">
-        <appender-ref ref="Console" />
-        <appender-ref ref="RollingFile" />
+    <!-- ========================= -->
+    <!-- MEDICONNECT -->
+    <!-- ========================= -->
+    <logger name="com.canaydin.mediconnect"
+            level="DEBUG"
+            additivity="false">
+
+        <appender-ref ref="Console"/>
+        <appender-ref ref="RollingFile"/>
+        <appender-ref ref="OTEL"/>
     </logger>
 
 </configuration>
